@@ -1,9 +1,9 @@
+rlkit/
+pointmass/
+
 .DS_Store
 __pycache__/
 *.py[cod]
 .xml
 .idea/
-
 *.pkl
-cs294-112/hw1/bc_weights/
-cs294-112/hw1/dagger_weights/
