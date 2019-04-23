@@ -4,8 +4,8 @@
     "batch_size": 100,
     "max_path_length": 200,
     "min_num_steps_before_training": 200,
-    "num_epochs": 50,
-    "num_eval_steps_per_epoch": 1500,
+    "num_epochs": 100,
+    "num_eval_steps_per_epoch": 2500,
     "num_expl_steps_per_train_loop": 500,
     "num_trains_per_train_loop": 500
   },

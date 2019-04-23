@@ -44,9 +44,9 @@ def run_policy(fn, num_rollouts):
         paths.append(path)
 
     return dict(
-        start_states=start_states,
-        final_states=final_states,
-        goal_states=goal_states,
-        actions=actions,
+        start_states=np.array(start_states),
+        final_states=np.array(final_states),
+        goal_states=np.array(goal_states),
+        actions=np.array(actions),
         paths=paths
     )
