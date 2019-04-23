@@ -80,17 +80,8 @@ if __name__ == "__main__":
     # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_20_22_55_55_0000--s-0/params.pkl"
     # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_20_23_13_09_0000--s-0/params.pkl"
 
-    # Trained for fewer timesteps
-    # 100 epochs -> 1 task
-    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_21_00_44_12_0000--s-0/params.pkl"
-    # 200 epochs -> 2 tasks
-    # file = "./logs/sac-pointmass-multitask-2/sac-pointmass-multitask-2_2019_04_21_01_11_43_0000--s-0/params.pkl"
-    # 200 epochs -> 1 task
-    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_21_12_16_24_0000--s-0/params.pkl"
-
-
     # 50 epochs new learning params -> 1 task
-    file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_22_23_07_0000--s-0/params.pkl"
+    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_22_23_07_0000--s-0/params.pkl"
     # 100
     # file = "./logs/sac-pointmass-multitask-1/sac-multitask-1/params.pkl"
     # 200 epochs -> 2 tasks
@@ -101,6 +92,13 @@ if __name__ == "__main__":
     # file = "./logs/sac-pointmass-multitask-4/sac-multitask-4/params.pkl"
     # 250 epochs -> 5 tasks
     # file = "./logs/sac-pointmass-multitask-5/sac-multitask-5/params.pkl"
+    # 300 epochs -> 6 tasks
+    # file = "./logs/sac-pointmass-multitask-6/sac-multitask-6/params.pkl"
+    # 350 epochs -> 7 tasks
+    file = "./logs/sac-pointmass-multitask-7/sac-multitask-7/params.pkl"
+    # 500 epochs -> 10 tasks
+    file = "./logs/sac-pointmass-multitask-10/sac-multitask-10/params.pkl"
+    file = "./logs/sac-pointmass-multitask-15/sac-multitask-15/params.pkl"
 
     # Goal point at origin
     # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_20_10_57_0000--s-0/params.pkl"

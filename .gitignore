@@ -1,9 +1,10 @@
 rlkit/
 pointmass/
+past-experiments/
 
 .DS_Store
 __pycache__/
 *.py[cod]
 .xml
 .idea/
-*.pkl
+

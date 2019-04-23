@@ -99,10 +99,10 @@ if __name__ == "__main__":
         algorithm="SAC",
         version="normal",
         layer_size=64,
-        num_tasks=1,
+        num_tasks=15,
         replay_buffer_size=int(1e5),
         algorithm_kwargs=dict(
-            num_epochs=50,
+            num_epochs=750,
             num_eval_steps_per_epoch=1500,
             num_trains_per_train_loop=500,
             num_expl_steps_per_train_loop=500,
