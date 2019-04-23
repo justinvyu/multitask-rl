@@ -81,19 +81,51 @@ if __name__ == "__main__":
     # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_20_23_13_09_0000--s-0/params.pkl"
 
     # Trained for fewer timesteps
-    file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_21_00_44_12_0000--s-0/params.pkl"
+    # 100 epochs -> 1 task
+    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_21_00_44_12_0000--s-0/params.pkl"
+    # 200 epochs -> 2 tasks
     # file = "./logs/sac-pointmass-multitask-2/sac-pointmass-multitask-2_2019_04_21_01_11_43_0000--s-0/params.pkl"
+    # 200 epochs -> 1 task
     # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_21_12_16_24_0000--s-0/params.pkl"
 
+
+    # 50 epochs new learning params -> 1 task
+    file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_22_23_07_0000--s-0/params.pkl"
+    # 100
+    # file = "./logs/sac-pointmass-multitask-1/sac-multitask-1/params.pkl"
+    # 200 epochs -> 2 tasks
+    # file = "./logs/sac-pointmass-multitask-2/sac-multitask-2/params.pkl"
+    # 300 epochs -> 3 tasks
+    # file = "./logs/sac-pointmass-multitask-3/sac-multitask-3/params.pkl"
+    # 200 epochs -> 4 tasks
+    # file = "./logs/sac-pointmass-multitask-4/sac-multitask-4/params.pkl"
+    # 250 epochs -> 5 tasks
+    # file = "./logs/sac-pointmass-multitask-5/sac-multitask-5/params.pkl"
+
+    # Goal point at origin
+    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_20_10_57_0000--s-0/params.pkl"
+
+    # Semi sparse experiment
+    # radius of 0.25 * goal_distance
+    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_20_48_30_0000--s-0/params.pkl"
+    # radius of 0.5 * goal_distance
+    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_20_52_36_0000--s-0/params.pkl"
+
     data = joblib.load(file)
+    print(data.keys())
+
+    # Load in deterministic evaluation policy
     policy = data['evaluation/policy']
     env = data['evaluation/env']
 
     plt.figure(figsize=(8, 8))
     num_goals = len(env.goals)
 
+    final_states = []
+    goals = []
+
     print("Number of goals:", num_goals)
-    for i in range(25):
+    for i in range(100):
         path = rollout(
             env,
             policy,
@@ -127,12 +159,16 @@ if __name__ == "__main__":
         # plt.annotate("start=({0}, {1}), {2}".format(start_x.round(4), start_y.round(4), i), (start_x, start_y), xytext=(start_x-.5, start_y+.2))
 
         final_x, final_y = obs[len(obs) - 1, 0], obs[len(obs) - 1, 1]
+        final_states.append(np.array([final_x, final_y]))
+
         # plt.scatter(final_x, final_y)
-        plt.annotate("end=({0}, {1})".format(final_x.round(4), final_y.round(4)), (final_x, final_y),
-                     xytext=(final_x - .5, final_y - 0.5))
+        # plt.annotate("end=({0}, {1})".format(final_x.round(4), final_y.round(4)), (final_x, final_y),
+        #              xytext=(final_x - .5, final_y - 0.5))
 
         goal = env.goals[goal_idx]
         goal_x, goal_y = goal[0], goal[1]
+        goals.append(np.array([goal_x, goal_y]))
+
         # plt.annotate("goal=({0}, {1})".format(goal_x.round(4), goal_y.round(4)), (goal_x, goal_y), xytext=(goal_x-.5, goal_y+.1))
         plt.scatter(goal[0], goal[1], color="r") # Goal
 
@@ -145,6 +181,15 @@ if __name__ == "__main__":
     # Add unit circle
     circle = plt.Circle((0, 0), env.goal_distance, color='black', alpha=.5, fill=False)
     plt.gcf().gca().add_artist(circle)
+
+    final_states = np.array(final_states)
+    goals = np.array(goals)
+    diff = final_states - goals
+    print(final_states)
+    print(goals)
+    print(diff)
+    print(np.linalg.norm(diff, axis=1) < 0.1)
+    print(np.sum((np.linalg.norm(diff, axis=1) < 0.1).astype(int)))
 
     plt.show()
 

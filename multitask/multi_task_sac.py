@@ -1,4 +1,5 @@
 from gym_pointmass.envs import PointMassEnv
+from gym_pointmass.envs import PointMassEnvRewardType
 from gym_pointmass.envs import ClippedPointMassEnv
 from multiworld.core.flat_goal_env import FlatGoalEnv
 
@@ -12,40 +13,20 @@ from rlkit.torch.sac.sac import SACTrainer
 from rlkit.torch.networks import FlattenMlp
 from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
 
-import torch
-import torch.nn as nn
-import numpy as np
-
-class ClippedTanhGaussianPolicy(TanhGaussianPolicy):
-    def __init__(self, obs_dim, action_dim, hidden_sizes, clip=0.1):
-        super(ClippedTanhGaussianPolicy, self).__init__(
-            obs_dim=obs_dim,
-            action_dim=action_dim,
-            hidden_sizes=hidden_sizes
-        )
-        self.clip = clip
-
-    def forward(
-        self,
-        obs,
-        reparameterize=True,
-        deterministic=False,
-        return_log_prob=False,
-    ):
-        output = list(super(ClippedTanhGaussianPolicy, self).forward(obs=obs,
-                                                                reparameterize=reparameterize,
-                                                                deterministic=deterministic,
-                                                                return_log_prob=return_log_prob))
-        output[0] = output[0] * self.clip
-        return output
-
 def experiment(variant):
-    base_expl_env = PointMassEnv(n=variant["num_tasks"])
+    base_expl_env = PointMassEnv(
+        n=variant["num_tasks"],
+        reward_type=PointMassEnvRewardType.DISTANCE
+    )
     expl_env = FlatGoalEnv(
         base_expl_env,
         append_goal_to_obs=True
     )
-    base_eval_env = PointMassEnv(n=variant["num_tasks"])
+
+    base_eval_env = PointMassEnv(
+        n=variant["num_tasks"],
+        reward_type=PointMassEnvRewardType.DISTANCE
+    )
     eval_env = FlatGoalEnv(
         base_eval_env,
         append_goal_to_obs=True
@@ -57,27 +38,27 @@ def experiment(variant):
     qf1 = FlattenMlp(
         input_size=obs_dim + action_dim,
         output_size=1,
-        hidden_sizes=[M, M, M],
+        hidden_sizes=[M, M],
     )
     qf2 = FlattenMlp(
         input_size=obs_dim + action_dim,
         output_size=1,
-        hidden_sizes=[M, M, M],
+        hidden_sizes=[M, M],
     )
     target_qf1 = FlattenMlp(
         input_size=obs_dim + action_dim,
         output_size=1,
-        hidden_sizes=[M, M, M],
+        hidden_sizes=[M, M],
     )
     target_qf2 = FlattenMlp(
         input_size=obs_dim + action_dim,
         output_size=1,
-        hidden_sizes=[M, M, M],
+        hidden_sizes=[M, M],
     )
     policy = TanhGaussianPolicy(
         obs_dim=obs_dim,
         action_dim=action_dim,
-        hidden_sizes=[M, M, M],
+        hidden_sizes=[M, M],
     )
     eval_policy = MakeDeterministic(policy)
     eval_path_collector = MdpPathCollector(
@@ -121,10 +102,10 @@ if __name__ == "__main__":
         num_tasks=1,
         replay_buffer_size=int(1e5),
         algorithm_kwargs=dict(
-            num_epochs=400,
-            num_eval_steps_per_epoch=1000,
-            num_trains_per_train_loop=200,
-            num_expl_steps_per_train_loop=200,
+            num_epochs=50,
+            num_eval_steps_per_epoch=1500,
+            num_trains_per_train_loop=500,
+            num_expl_steps_per_train_loop=500,
             min_num_steps_before_training=200,
             max_path_length=200,
             batch_size=100,
@@ -140,5 +121,4 @@ if __name__ == "__main__":
         ),
     )
     setup_logger('sac-pointmass-multitask-' + str(variant["num_tasks"]), variant=variant)
-    # ptu.set_gpu_mode(True)  # optionally set the GPU (default=False)
     experiment(variant)
