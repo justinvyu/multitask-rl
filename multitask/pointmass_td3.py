@@ -16,12 +16,19 @@ from multiworld.core.flat_goal_env import FlatGoalEnv
 import numpy as np
 
 def experiment(variant):
-    base_expl_env = PointMassEnv(n=2, reward_type=variant["reward_type"])
+    base_expl_env = PointMassEnv(
+        n=variant["num_tasks"],
+        reward_type=variant["reward_type"]
+    )
     expl_env = FlatGoalEnv(
         base_expl_env,
         append_goal_to_obs=True
     )
-    base_eval_env = PointMassEnv(n=2, reward_type=variant["reward_type"])
+
+    base_eval_env = PointMassEnv(
+        n=variant["num_tasks"],
+        reward_type=variant["reward_type"]
+    )
     eval_env = FlatGoalEnv(
         base_eval_env,
         append_goal_to_obs=True
@@ -103,41 +110,28 @@ def experiment(variant):
 
 
 if __name__ == "__main__":
-
-    # base_env = PointMassEnv(n=1)
-    # env = FlatGoalEnv(
-    #     base_env,
-    #     append_goal_to_obs=True
-    # )
-    # obs = env.reset()
-    # print(env.observation_space, env.wrapped_env.observation_space)
-    # print("obs: ", obs)
-    # for i in range(100):
-    #     # next_obs, reward, done, _ = env.step(np.array([0.2, 0.3]))
-    #     next_obs, reward, done, _  = env.step(2 * np.random.rand(2) - 1)
-    #     print("next_obs: {0}, reward: {1}, done: {2}".format(next_obs, reward, done))
-
     variant = dict(
         reward_type=PointMassEnvRewardType.DISTANCE,
+        num_tasks=1,
         algorithm_kwargs=dict(
-            num_epochs=500,
-            num_eval_steps_per_epoch=500,
-            num_trains_per_train_loop=250,
-            num_expl_steps_per_train_loop=250,
-            min_num_steps_before_training=100,
-            max_path_length=100,
-            batch_size=50,
+            num_epochs=50,
+            num_eval_steps_per_epoch=1500,
+            num_trains_per_train_loop=500,
+            num_expl_steps_per_train_loop=500,
+            min_num_steps_before_training=200,
+            max_path_length=200,
+            batch_size=100,
         ),
         trainer_kwargs=dict(
             discount=0.99,
         ),
         qf_kwargs=dict(
-            hidden_sizes=[64, 32],
+            hidden_sizes=[64, 64],
         ),
         policy_kwargs=dict(
-            hidden_sizes=[64, 32],
+            hidden_sizes=[64, 64],
         ),
-        replay_buffer_size=int(1E6),
+        replay_buffer_size=int(1E5),
     )
     setup_logger("td3-pointmass-multitask", variant=variant)
     experiment(variant)

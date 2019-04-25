@@ -1,14 +1,17 @@
 from gym_pointmass.envs import PointMassEnv
 from gym_pointmass.envs import PointMassEnvRewardType
-from gym_pointmass.envs import ClippedPointMassEnv
 from multiworld.core.flat_goal_env import FlatGoalEnv
 
-import rlkit.torch.pytorch_util as ptu
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
-from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger
 from rlkit.samplers.data_collector import MdpPathCollector
 from rlkit.torch.sac.policies import TanhGaussianPolicy, MakeDeterministic
+from rlkit.torch.networks import TanhMlpPolicy
+from rlkit.exploration_strategies.base import (
+    PolicyWrappedWithExplorationStrategy
+)
+from rlkit.exploration_strategies.gaussian_strategy import GaussianStrategy
+
 from rlkit.torch.sac.sac import SACTrainer
 from rlkit.torch.networks import FlattenMlp
 from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
@@ -59,7 +62,22 @@ def experiment(variant):
         obs_dim=obs_dim,
         action_dim=action_dim,
         hidden_sizes=[M, M],
+        std=0.1
     )
+    # es = GaussianStrategy(
+    #     action_space=expl_env.action_space,
+    #     max_sigma=0.1,
+    #     min_sigma=0.1
+    # )
+    # policy =TanhMlpPolicy(
+    #     input_size=obs_dim,
+    #     output_size=action_dim,
+    #     hidden_sizes=[M, M]
+    # )
+    # expl_policy = PolicyWrappedWithExplorationStrategy(
+    #     exploration_strategy=es,
+    #     policy=policy
+    # )
     eval_policy = MakeDeterministic(policy)
     eval_path_collector = MdpPathCollector(
         eval_env,
@@ -99,10 +117,10 @@ if __name__ == "__main__":
         algorithm="SAC",
         version="normal",
         layer_size=64,
-        num_tasks=15,
+        num_tasks=1,
         replay_buffer_size=int(1e5),
         algorithm_kwargs=dict(
-            num_epochs=750,
+            num_epochs=50,
             num_eval_steps_per_epoch=1500,
             num_trains_per_train_loop=500,
             num_expl_steps_per_train_loop=500,

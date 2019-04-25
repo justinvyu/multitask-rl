@@ -45,17 +45,18 @@ def plot_learning_curve():
         avg_rets = data["evaluationAverage_Returns"]
         min_rets = data["evaluationRewards_Min"]
         max_rets = data["evaluationRewards_Max"]
+        idxs = np.arange(0, n * 50, n)
 
-        plt.plot(avg_rets[:n * 50])
+        plt.plot(np.array(range(n * 50)) / n, avg_rets[:n*50])
         # plt.errorbar(data["Epoch"][:n*50], avg_rets[:n * 50], yerr=np.array([min_rets[:n*50], max_rets[:50*n]]), alpha=0.9)
 
     plt.legend(num_tasks)
-    plt.xticks(np.arange(0, 750, 50))
+    plt.xticks(np.arange(0, 51, 10))
     plt.ylabel("Average Return")
     plt.xlabel("Epoch (200 env steps/epoch)")
     plt.title("Learning curves with different number of tasks")
     plt.show()
 
 if __name__ == "__main__":
-    plot_task_completion()
-    # plot_learning_curve()
+    # plot_task_completion()
+    plot_learning_curve()
