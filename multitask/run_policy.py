@@ -4,6 +4,20 @@ import joblib
 import numpy as np
 
 def run_policy(fn, num_rollouts):
+    data = joblib.load(fn)
+
+    # Load deterministic evaluation policy.
+    policy = data["evaluation/policy"]
+    env = data["evaluation/env"]
+    return _run_policy(env, policy, num_rollouts)
+
+def run_distilled_policy(fn, num_rollouts):
+    data = joblib.load(fn)
+    policy = data["policy"]
+    env = data["env"]
+    return _run_policy(env, policy, num_rollouts)
+
+def _run_policy(env, policy, num_rollouts):
     """
     Takes in a trained policy, runs the policy for a specified number of
     rollouts, and returns the results of the experiment.
@@ -12,12 +26,6 @@ def run_policy(fn, num_rollouts):
     :return: A list of the `num_rollouts` recorded paths to be used for
              further analysis.
     """
-    data = joblib.load(fn)
-
-    # Load deterministic evaluation policy.
-    policy = data["evaluation/policy"]
-    env = data["evaluation/env"]
-
     start_states, final_states, goal_states, actions, paths = [], [], [], [], []
 
     for i in range(num_rollouts):
@@ -48,5 +56,6 @@ def run_policy(fn, num_rollouts):
         final_states=np.array(final_states),
         goal_states=np.array(goal_states),
         actions=np.array(actions),
-        paths=paths
+        paths=paths,
+        env=env
     )

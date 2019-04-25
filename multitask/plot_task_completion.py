@@ -57,5 +57,5 @@ def plot_learning_curve():
     plt.show()
 
 if __name__ == "__main__":
-    # plot_task_completion()
-    plot_learning_curve()
+    plot_task_completion()
+    # plot_learning_curve()
