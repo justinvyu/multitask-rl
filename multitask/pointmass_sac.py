@@ -6,11 +6,6 @@ from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 from rlkit.launchers.launcher_util import setup_logger
 from rlkit.samplers.data_collector import MdpPathCollector
 from rlkit.torch.sac.policies import TanhGaussianPolicy, MakeDeterministic
-from rlkit.torch.networks import TanhMlpPolicy
-from rlkit.exploration_strategies.base import (
-    PolicyWrappedWithExplorationStrategy
-)
-from rlkit.exploration_strategies.gaussian_strategy import GaussianStrategy
 
 from rlkit.torch.sac.sac import SACTrainer
 from rlkit.torch.networks import FlattenMlp
@@ -61,8 +56,7 @@ def experiment(variant):
     policy = TanhGaussianPolicy(
         obs_dim=obs_dim,
         action_dim=action_dim,
-        hidden_sizes=[M, M],
-        std=0.1
+        hidden_sizes=[M, M]
     )
     # es = GaussianStrategy(
     #     action_space=expl_env.action_space,

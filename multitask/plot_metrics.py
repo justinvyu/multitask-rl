@@ -4,6 +4,9 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from numpy import genfromtxt
+import joblib
+import torch
+import itertools
 
 def plot_task_completion(num_rollouts_per_task=50, completion_threshold=0.1):
     sns.set()
@@ -57,6 +60,58 @@ def plot_learning_curve():
     plt.title("Learning curves with different number of tasks")
     plt.show()
 
+def plot_values():
+    path = "./logs/sac-multitask-3/params.pkl"
+    data = joblib.load(path)
+    print(data.keys())
+    target_qf1 = data["trainer/target_qf1"]
+    policy = data["evaluation/policy"]
+    env = data["evaluation/env"]
+    bound = env.bound
+    print(target_qf1)
+
+    x_vals = np.arange(-bound, bound + 0.5, 0.25)
+    y_vals = np.arange(-bound, bound + 0.5, 0.25)
+    vals = np.zeros((len(x_vals), len(y_vals)))
+
+    plt.figure(figsize=(8, 8))
+
+    for i, x in enumerate(x_vals):
+        for j, y in enumerate(y_vals):
+            obs = np.array([[x, y, 0, 0, 1]])
+            act, _ = policy.get_action(obs)
+            act = np.array(act)
+            value = target_qf1(torch.Tensor(obs), torch.Tensor(act))
+            value = int(value.detach().numpy().flatten()[0])
+            vals[i][j] = value
+            # plt.annotate("{}".format(value), (x, y), fontsize=10)
+
+    xy = np.array(list(itertools.product(x_vals, y_vals)))
+    print(xy)
+
+    plt.scatter(xy[:, 0], xy[:, 1], c=vals.flatten(), s=30, cmap="gray")
+
+    # for x in x_vals:
+    #     for y in y_vals:
+    #         obs = np.array([[x, y, 1.]])
+    #         act, _ = policy.get_action(obs)
+    #         act = np.array(act)
+    #         value = target_qf1(torch.Tensor(obs), torch.Tensor(act))
+    #         value = int(value.detach().numpy().flatten()[0])
+    #         # print(np.abs(max_val - value))
+    #         # print(np.abs(max_val) - np.abs(min_val))
+    #         normalized = np.abs(max_val - value) / np.abs(max_val - min_val)
+    #         plt.scatter(x, y, c=np.random.random(), s=10, cmap='rainbow')
+    #         plt.annotate("{}".format(value), (x, y))
+
+    # plt.scatter(5, 0, c="green")
+    # plt.scatter(-5, 0, c="green")
+
+    plt.xlim(-6.25, 6.25)
+    plt.ylim(-6.25, 6.25)
+    plt.show()
+
 if __name__ == "__main__":
-    # plot_task_completion()
-    plot_learning_curve()
+    plot_task_completion(completion_threshold=0.5)
+    # plot_learning_curve()
+    # plot_values()

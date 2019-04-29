@@ -69,21 +69,10 @@ def plot_separated_by_task(file):
 if __name__ == "__main__":
     sns.set()
 
-    # file = "./logs/sac-pointmass-multitask/sac-pointmass-multitask_2019_04_13_23_32_53_0000--s-0/params.pkl"
-    # file = "./logs/sac-pointmass-multitask-3/sac-pointmass-multitask-3_2019_04_14_00_30_43_0000--s-0/params.pkl"
-    # file = "./logs/sac-pointmass-multitask-5/sac-pointmass-multitask-5_2019_04_14_01_40_18_0000--s-0/params.pkl"
-    # file = "./logs/sac-pointmass-multitask-10/sac-pointmass-multitask-10_2019_04_14_13_54_28_0000--s-0/params.pkl"
-    # file = "./logs/sac-pointmass-multitask-25/sac-pointmass-multitask-25_2019_04_15_23_30_06_0000--s-0/params.pkl"
-    # file = "./logs/sac-pointmass-multitask-5/sac-pointmass-multitask-5_2019_04_20_18_57_19_0000--s-0/params.pkl"
-    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_20_20_39_43_0000--s-0/params.pkl"
-    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_20_22_37_49_0000--s-0/params.pkl"
-    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_20_22_55_55_0000--s-0/params.pkl"
-    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_20_23_13_09_0000--s-0/params.pkl"
-
     # 50 epochs new learning params -> 1 task
-    # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_22_23_07_0000--s-0/params.pkl"
+    file = "./logs/sac-multitask-1/params.pkl"
     # 100
-    # file = "./logs/sac-pointmass-multitask-1/sac-multitask-1/params.pkl"
+    # file = "./logs/past-experiments/sac-pointmass-multitask-1/sac-multitask-1/params.pkl"
     # 200 epochs -> 2 tasks
     # file = "./logs/sac-pointmass-multitask-2/sac-multitask-2/params.pkl"
     # 300 epochs -> 3 tasks
@@ -95,10 +84,10 @@ if __name__ == "__main__":
     # 300 epochs -> 6 tasks
     # file = "./logs/sac-pointmass-multitask-6/sac-multitask-6/params.pkl"
     # 350 epochs -> 7 tasks
-    file = "./logs/sac-pointmass-multitask-7/sac-multitask-7/params.pkl"
+    # file = "./logs/sac-pointmass-multitask-7/sac-multitask-7/params.pkl"
     # 500 epochs -> 10 tasks
-    file = "./logs/sac-pointmass-multitask-10/sac-multitask-10/params.pkl"
-    file = "./logs/sac-pointmass-multitask-15/sac-multitask-15/params.pkl"
+    # file = "./logs/sac-pointmass-multitask-10/sac-multitask-10/params.pkl"
+    file = "./logs/sac-multitask-15/params.pkl"
 
     # Goal point at origin
     # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_20_10_57_0000--s-0/params.pkl"
@@ -110,7 +99,6 @@ if __name__ == "__main__":
     # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_20_52_36_0000--s-0/params.pkl"
 
     data = joblib.load(file)
-    print(data.keys())
 
     # Load in deterministic evaluation policy
     policy = data['evaluation/policy']
@@ -123,7 +111,9 @@ if __name__ == "__main__":
     goals = []
 
     print("Number of goals:", num_goals)
-    for i in range(100):
+    num_plotted = 0
+    # for i in range(10):
+    while num_plotted < 10:
         path = rollout(
             env,
             policy,
@@ -135,6 +125,10 @@ if __name__ == "__main__":
         obs = path["observations"]
         acts = path["actions"]
         goal_idx = np.argmax(obs[0, 2:])
+        if goal_idx != 0:
+            continue
+        num_plotted += 1
+
         plot_row, plot_col = goal_idx // 5, goal_idx % 5
 
         start_x = obs[0, 0]
@@ -183,10 +177,6 @@ if __name__ == "__main__":
     final_states = np.array(final_states)
     goals = np.array(goals)
     diff = final_states - goals
-    print(final_states)
-    print(goals)
-    print(diff)
-    print(np.linalg.norm(diff, axis=1) < 0.1)
     print(np.sum((np.linalg.norm(diff, axis=1) < 0.1).astype(int)))
 
     plt.show()
