@@ -4,15 +4,14 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.optim import Adam
 import numpy as np
-from multitask.run_policy import run_distilled_policy
 import joblib
-
 import pickle
+
 from rlkit.torch.networks import TanhMlpPolicy
 from gym_pointmass.envs import PointMassEnv
 from multiworld.core.flat_goal_env import FlatGoalEnv
-import matplotlib.pyplot as plt
-import seaborn as sns
+from multitask.run_policy import run_distilled_policy
+from multitask.visualize_rollouts import visualize_rollouts
 
 def get_batch(env, batch_size, policies):
     """
@@ -124,54 +123,6 @@ if __name__ == "__main__":
         policies = [get_expert_policy(policies_path, i) for i in range(num_tasks)]
         train_distilled_policy(num_tasks, policies=policies)
     else:
-        # TODO: Make a generic plot trajectory helper function.
         num_rollouts = 200
         results = run_distilled_policy("./logs/policy-distillation/model-25.pkl", num_rollouts)
-        paths = results["paths"]
-        env = results["env"]
-        sns.set()
-        plt.figure(figsize=(8, 8))
-
-        for path in paths:
-            obs = path["observations"]
-            acts = path["actions"]
-            goal_idx = np.argmax(obs[0, 2:])
-
-            start_x = obs[0, 0]
-            start_y = obs[0, 1]
-
-            plt.scatter(start_x, start_y, color="g")
-            plt.scatter(obs[1:, 0], obs[1:, 1], color="b", s=10)
-
-            acts_x = acts[:, 0]
-            acts_y = acts[:, 1]
-
-            plt.quiver(obs[:, 0], obs[:, 1], acts_x, acts_y,
-                       angles='xy', scale_units='xy', scale=1, width=.002, headwidth=2, alpha=.9)
-
-            goal = env.goals[goal_idx]
-            goal_x, goal_y = goal[0], goal[1]
-
-            plt.scatter(goal[0], goal[1], color="r")  # Goal
-
-        plt.xlim(-env.bound, env.bound)
-        plt.ylim(-env.bound, env.bound)
-
-        # Legend
-        plt.legend(["Initial State (s_0)", "States (s_t)", "Actions (a_t)", "Goal Point"])
-
-        # Add unit circle
-        circle = plt.Circle((0, 0), env.goal_distance, color='black', alpha=.5, fill=False)
-        plt.gcf().gca().add_artist(circle)
-
-        for goal in env.goals:
-            circle = plt.Circle(goal, 0.25, color='red', alpha=.75, fill=False)
-            plt.gcf().gca().add_artist(circle)
-
-        final_states = np.array(results["final_states"])
-        goals = np.array(results["goal_states"])
-        diff = final_states - goals
-        completion = np.sum((np.linalg.norm(diff, axis=1) < 0.25).astype(int)) / num_rollouts
-        plt.title("% task completion: {0:.0%}, {1} rollouts".format(completion, num_rollouts))
-
-        plt.show()
+        visualize_rollouts(results)
