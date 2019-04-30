@@ -80,7 +80,7 @@ if __name__ == "__main__":
     # 200 epochs -> 4 tasks
     # file = "./logs/sac-pointmass-multitask-4/sac-multitask-4/params.pkl"
     # 250 epochs -> 5 tasks
-    # file = "./logs/sac-pointmass-multitask-5/sac-multitask-5/params.pkl"
+    file = "./logs/sac-multitask-5/params.pkl"
     # 300 epochs -> 6 tasks
     # file = "./logs/sac-pointmass-multitask-6/sac-multitask-6/params.pkl"
     # 350 epochs -> 7 tasks
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     # file = "./logs/sac-pointmass-multitask-10/sac-multitask-10/params.pkl"
     # file = "./logs/sac-multitask-15/params.pkl"
 
-    file = "./logs/policy-distillation/expert-singletask-policies/1/sac-pointmass-singletask-experts-1_2019_04_29_20_54_32_0000--s-0/params.pkl"
+    # file = "./logs/policy-distillation/expert-singletask-policies/1/sac-pointmass-singletask-experts-1_2019_04_29_20_54_32_0000--s-0/params.pkl"
 
     # Goal point at origin
     # file = "./logs/sac-pointmass-multitask-1/sac-pointmass-multitask-1_2019_04_22_20_10_57_0000--s-0/params.pkl"
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     print("Number of goals:", num_goals)
     num_plotted = 0
     # for i in range(10):
-    while num_plotted < 10:
+    while num_plotted < 100:
         path = rollout(
             env,
             policy,

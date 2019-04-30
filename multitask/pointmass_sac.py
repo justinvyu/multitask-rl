@@ -172,11 +172,15 @@ def train_expert_policies(num_tasks):
     """
     goal_env = PointMassEnv(n=num_tasks)
     goals = goal_env.goals
-    which_goal = 14
+    which_goal = 0
 
     # for i, goal in enumerate(goals):
     train_singletask_policy(goal=goals[which_goal], idx_str=str(which_goal))
 
 if __name__ == "__main__":
     # train_multitask_policy(num_tasks=1)
-    train_expert_policies(15)
+    # train_expert_policies(5)
+    env1 = PointMassEnv(n=15)
+    print(env1.goals)
+    env2 = PointMassEnv(n=5)
+    print(env2.goals)
