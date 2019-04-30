@@ -14,7 +14,7 @@ from multiworld.core.flat_goal_env import FlatGoalEnv
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def get_batch(env, batch_size, use_optimal_policy, policies):
+def get_batch(env, batch_size, policies):
     """
     Returns an array with sampled "inputs", which are sampled points in the state space,
     and ground truth labels for the optimal action at that point.
@@ -27,13 +27,18 @@ def get_batch(env, batch_size, use_optimal_policy, policies):
         point = np.array(sample[:env.dimension])
         goal_idx = np.argmax(sample[env.dimension:])
         goal = np.array(env.goals[goal_idx])
-        if use_optimal_policy:
+        if not policies:
+            # If no policies are being loaded, use the optimal straight-line policy.
             act = goal - point
             if (np.linalg.norm(act) > 1):
                 act /= np.linalg.norm(act) # Limit to unit vector.
         else:
+            # Load expert model.
             expert = policies[goal_idx]
+            # Modify observation to only contain a "single-task" one-hot encoding
+            # appended to the end, since the expert only has one goal. Ex: [0.3, 0.5, 1]
             single_task_sample = np.concatenate([point, [1]])
+            # Get the optimal action from this state.
             act, _ = expert.get_action(single_task_sample)
             act = np.array(act)
         batch_obs.append(sample)
@@ -49,7 +54,6 @@ def get_expert_policy(path, task_index):
     return data["evaluation/policy"]
 
 def train_supervised(num_tasks,
-                     use_optimal_policy=True,
                      policies=None,
                      epochs_per_task=500,
                      batch_size=100, lr=1e-3):
@@ -61,16 +65,17 @@ def train_supervised(num_tasks,
     policy = TanhMlpPolicy(
         input_size=obs_dim,
         output_size=act_dim,
-        hidden_sizes=[64, 64, 64]
+        hidden_sizes=[64, 64]
+        # hidden_sizes=[64, 64, 64]
     )
 
     criterion = nn.MSELoss()
     optim = Adam(policy.parameters(), lr=lr)
     for epoch in range(epochs_per_task * num_tasks):
-        if not use_optimal_policy:
+        if policies:
             assert len(policies) == num_tasks, "Number of expert policies needs " \
                                                "to be equal to the number of tasks"
-        obs, act_labels = get_batch(env, batch_size, use_optimal_policy, policies)
+        obs, act_labels = get_batch(env, batch_size, policies)
 
         obs_var, act_labels_var = Variable(torch.from_numpy(obs)).float(), \
                                   Variable(torch.from_numpy(act_labels)).float()
@@ -89,7 +94,10 @@ def train_supervised(num_tasks,
         policy=policy,
         env=env
     )
-    with open("./logs/policy-distillation/model-{0}-from_trained_experts.pkl".format(num_tasks), "wb") as f:
+
+    appended_path = "-" if policies else "from_expert_policies"
+    path = "./logs/policy-distillation/model-{0}{1}.pkl".format(num_tasks, appended_path)
+    with open(path, "wb") as f:
         pickle.dump(out, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     return policy, env
@@ -101,7 +109,6 @@ if __name__ == "__main__":
         policies_path = "./logs/policy-distillation/expert-singletask-policies-{}".format(num_tasks)
         policies = [get_expert_policy(policies_path, i) for i in range(num_tasks)]
         train_supervised(num_tasks,
-                         use_optimal_policy=False,
                          policies=policies)
     else:
         # TODO: Make a generic plot trajectory helper function.
@@ -112,15 +119,10 @@ if __name__ == "__main__":
         sns.set()
         plt.figure(figsize=(8, 8))
 
-        goal_to_show = 14
         for path in paths:
             obs = path["observations"]
             acts = path["actions"]
             goal_idx = np.argmax(obs[0, 2:])
-            if goal_idx != goal_to_show:
-                continue
-
-            plot_row, plot_col = goal_idx // 5, goal_idx % 5
 
             start_x = obs[0, 0]
             start_y = obs[0, 1]
@@ -149,17 +151,14 @@ if __name__ == "__main__":
         circle = plt.Circle((0, 0), env.goal_distance, color='black', alpha=.5, fill=False)
         plt.gcf().gca().add_artist(circle)
 
-        circle2 = plt.Circle(env.goals[goal_to_show], 0.25, color='red', alpha=.75, fill=False)
-        plt.gcf().gca().add_artist(circle2)
-
-        # for goal in env.goals:
-        #     circle = plt.Circle(goal, 0.25, color='red', alpha=.75, fill=False)
-        #     plt.gcf().gca().add_artist(circle)
+        for goal in env.goals:
+            circle = plt.Circle(goal, 0.25, color='red', alpha=.75, fill=False)
+            plt.gcf().gca().add_artist(circle)
 
         final_states = np.array(results["final_states"])
         goals = np.array(results["goal_states"])
         diff = final_states - goals
-        # completion = np.sum((np.linalg.norm(diff, axis=1) < 0.25).astype(int)) / num_rollouts
-        # plt.title("% task completion: {0:.0%}, {1} rollouts".format(completion, num_rollouts))
+        completion = np.sum((np.linalg.norm(diff, axis=1) < 0.25).astype(int)) / num_rollouts
+        plt.title("% task completion: {0:.0%}, {1} rollouts".format(completion, num_rollouts))
 
         plt.show()
