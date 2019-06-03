@@ -13,6 +13,9 @@ from multiworld.core.flat_goal_env import FlatGoalEnv
 from multitask.run_policy import run_distilled_policy
 from multitask.visualize_rollouts import visualize_rollouts
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 def get_batch(env, batch_size, policies):
     """
     Returns an array with sampled "inputs", which are sampled points in the state space,
@@ -115,14 +118,48 @@ def train_distilled_policy(num_tasks,
 
     return policy, env
 
+def plot_learning_curves():
+    # TODO: This is a bit sketchy right now. Everything is converging way too early, so the plot doesn't say much.
+    sns.set()
+    common_path = "./logs/policy-distillation/model-"
+    num_tasks = [1, 3, 5, 15]
+
+    plt.figure(figsize=(8, 6))
+    for n in num_tasks:
+        path = common_path + str(n) + "-from_expert_policies.pkl"
+        data = joblib.load(path)
+        loss = data["loss_history"]
+
+        plt.plot(np.array(range(n * 500)) / 500 / n, loss)
+        # plt.errorbar(data["Epoch"][:n*50], avg_rets[:n * 50], yerr=np.array([min_rets[:n*50], max_rets[:50*n]]), alpha=0.9)
+
+    plt.legend(num_tasks)
+    plt.xticks(np.arange(0, 1.01, 0.1))
+    plt.ylabel("Loss (MSE)")
+    plt.xlabel("% of training time (epoch # / total epochs for task)")
+    plt.title("Learning curves with different number of tasks")
+    plt.show()
+
 if __name__ == "__main__":
     train = False
     if train:
-        num_tasks = 5
+        num_tasks = 15
         policies_path = "./logs/policy-distillation/expert-singletask-policies-{}".format(num_tasks)
         policies = [get_expert_policy(policies_path, i) for i in range(num_tasks)]
         train_distilled_policy(num_tasks, policies=policies)
     else:
         num_rollouts = 200
-        results = run_distilled_policy("./logs/policy-distillation/model-25.pkl", num_rollouts)
-        visualize_rollouts(results)
+        # data = joblib.load("./logs/policy-distillation/model-5-from_expert_policies.pkl")
+        # print(data)
+        # loss_history = data["loss_history"]
+        # sns.set()
+        # plt.plot(loss_history)
+        # plt.xlabel("epochs")
+        # plt.ylabel("loss")
+        # plt.title("Learning curve of distilled policy")
+        # plt.show()
+        # results = run_distilled_policy("./logs/policy-distillation/model-1-from_expert_policies.pkl", num_rollouts)
+        # results = run_distilled_policy("./logs/policy-distillation/model-3-from_expert_policies.pkl", num_rollouts)
+        # visualize_rollouts(results)
+
+        plot_learning_curves()

@@ -2,6 +2,7 @@ rlkit/
 pointmass/
 past-experiments/
 debug.log
+singletask
 
 .DS_Store
 __pycache__/

@@ -98,8 +98,6 @@ def train_multitask_policy(num_tasks):
         layer_size=64,
         num_hidden_layers=2,
         num_tasks=num_tasks,
-        base_expl_env=base_expl_env,
-        base_eval_env=base_eval_env,
         replay_buffer_size=int(1e5),
         algorithm_kwargs=dict(
             num_epochs=50,
@@ -120,8 +118,8 @@ def train_multitask_policy(num_tasks):
             use_automatic_entropy_tuning=True,
         )
     )
-    setup_logger(exp_prefix="./sac-pointmass-" + num_tasks, variant=variant)
-    run_sac(variant)
+    setup_logger(exp_prefix="./sac-pointmass-" + str(num_tasks), variant=variant)
+    run_sac(base_expl_env, base_eval_env, variant)
 
 def train_singletask_policy(goal, idx_str=""):
     """
@@ -160,7 +158,7 @@ def train_singletask_policy(goal, idx_str=""):
             use_automatic_entropy_tuning=True,
         )
     )
-    exp_dir = "sac-pointmass-singletask-experts-" + idx_str
+    exp_dir = "sac-pointmass-singletask-experts-" + str(idx_str)
     setup_logger(exp_dir, variant=variant)
 
     run_sac(base_expl_env, base_eval_env, variant)
@@ -182,5 +180,5 @@ if __name__ == "__main__":
     # train_expert_policies(5)
     env1 = PointMassEnv(n=15)
     print(env1.goals)
-    env2 = PointMassEnv(n=5)
+    env2 = PointMassEnv(n=6)
     print(env2.goals)
